@@ -39,15 +39,26 @@ def search_rating_view(rating):
         'family': ['G', 'PG', 'PG-13'],
         'adult': ['R', 'NC-17']
     }
+
+    response = {}
+
     if rating in rating_dictionary:
-        response = get_value_from_db(
-            sql=f'''
-            SELECT title, rating, description
-            FROM netflix
-            WHERE rating IN {set(rating_dictionary[rating])}
-            ''')
-    else:
-        response = {'description': 'Category not found'}
+        if len(rating_dictionary[rating]) == 0:
+            response = {'description': 'List category is empty'}
+        elif len(rating_dictionary[rating]) < 2:
+            response = get_value_from_db(
+                sql=f'''
+                SELECT title, rating, description
+                FROM netflix
+                WHERE rating IN ('{rating_dictionary[rating][0]}')
+                ''')
+        else:
+            response = get_value_from_db(
+                sql=f'''
+                SELECT title, rating, description
+                FROM netflix
+                WHERE rating IN {tuple(rating_dictionary[rating])}
+                ''')
 
     data = []
     for i in response:
